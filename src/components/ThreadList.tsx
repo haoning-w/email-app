@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { mockEmails, Email } from "@/data/emails";
+import { Email } from "@/data/emails";
 import { useFilter } from "@/context/FilterContext";
+import { useEmailStore } from "@/store/emailStore";
 import {
   Star,
   Tag,
@@ -132,8 +133,14 @@ function EmailRow({
 export default function EmailList() {
   const router = useRouter();
   const { filter } = useFilter();
-  const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set());
-  const [emails, setEmails] = useState(mockEmails);
+  const {
+    emails,
+    selectedEmails,
+    toggleSelectEmail,
+    selectAllEmails,
+    clearSelection,
+    toggleStar,
+  } = useEmailStore();
 
   const filteredEmails = useMemo(() => {
     if (filter.type === "folder") {
@@ -159,32 +166,12 @@ export default function EmailList() {
     return emails;
   }, [emails, filter]);
 
-  const toggleSelect = (id: string) => {
-    setSelectedEmails((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-
   const toggleSelectAll = () => {
     if (selectedEmails.size === filteredEmails.length) {
-      setSelectedEmails(new Set());
+      clearSelection();
     } else {
-      setSelectedEmails(new Set(filteredEmails.map((e) => e.id)));
+      selectAllEmails(filteredEmails.map((e) => e.id));
     }
-  };
-
-  const toggleStar = (id: string) => {
-    setEmails((prev) =>
-      prev.map((email) =>
-        email.id === id ? { ...email, starred: !email.starred } : email,
-      ),
-    );
   };
 
   const unreadCount = filteredEmails.filter((e) => !e.read).length;
@@ -284,7 +271,7 @@ export default function EmailList() {
               key={email.id}
               email={email}
               isSelected={selectedEmails.has(email.id)}
-              onSelect={toggleSelect}
+              onSelect={toggleSelectEmail}
               onToggleStar={toggleStar}
               onClick={(id) => router.push(`/thread/${id}`)}
             />
