@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { mockEmails, Email } from "@/data/emails";
 import {
   Star,
@@ -28,11 +29,12 @@ function formatDate(date: Date): string {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-function EmailRow({ email, isSelected, onSelect, onToggleStar }: {
+function EmailRow({ email, isSelected, onSelect, onToggleStar, onClick }: {
   email: Email;
   isSelected: boolean;
   onSelect: (id: string) => void;
   onToggleStar: (id: string) => void;
+  onClick: (id: string) => void;
 }) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -43,12 +45,14 @@ function EmailRow({ email, isSelected, onSelect, onToggleStar }: {
       } ${!email.read ? "bg-white dark:bg-gray-900" : "bg-gray-50/50 dark:bg-gray-900/50"}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={() => onClick(email.id)}
     >
       {/* Checkbox */}
       <input
         type="checkbox"
         checked={isSelected}
         onChange={() => onSelect(email.id)}
+        onClick={(e) => e.stopPropagation()}
         className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
       />
 
@@ -67,6 +71,7 @@ function EmailRow({ email, isSelected, onSelect, onToggleStar }: {
 
       {/* Important marker */}
       <button
+        onClick={(e) => e.stopPropagation()}
         className={`p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full ${email.important ? "text-yellow-600" : "text-gray-400"}`}
       >
         <Tag className={`w-5 h-5 ${email.important ? "fill-current" : ""}`} />
@@ -101,6 +106,7 @@ function EmailRow({ email, isSelected, onSelect, onToggleStar }: {
 }
 
 export default function EmailList() {
+  const router = useRouter();
   const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set());
   const [emails, setEmails] = useState(mockEmails);
 
@@ -209,6 +215,7 @@ export default function EmailList() {
             isSelected={selectedEmails.has(email.id)}
             onSelect={toggleSelect}
             onToggleStar={toggleStar}
+            onClick={(id) => router.push(`/thread/${id}`)}
           />
         ))}
       </div>
