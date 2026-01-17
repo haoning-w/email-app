@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { folders, labels } from "@/data/emails";
+import { useFilter } from "@/context/FilterContext";
 import {
   Inbox,
   Star,
@@ -27,7 +27,9 @@ const iconMap: Record<string, LucideIcon> = {
 };
 
 export default function Sidebar() {
-  const [activeFolder, setActiveFolder] = useState("Inbox");
+  const { filter, setFilter } = useFilter();
+  const isActiveFolder = (name: string) => filter.type === "folder" && filter.value === name;
+  const isActiveLabel = (name: string) => filter.type === "label" && filter.value === name;
 
   return (
     <aside className="w-64 bg-gray-50 dark:bg-gray-900 h-full flex flex-col">
@@ -45,9 +47,9 @@ export default function Sidebar() {
           {folders.map((folder) => (
             <li key={folder.name}>
               <button
-                onClick={() => setActiveFolder(folder.name)}
+                onClick={() => setFilter("folder", folder.name)}
                 className={`w-full flex items-center gap-3 px-4 py-2 rounded-r-full text-sm transition-colors ${
-                  activeFolder === folder.name
+                  isActiveFolder(folder.name)
                     ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-200 font-semibold"
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800"
                 }`}
@@ -55,12 +57,12 @@ export default function Sidebar() {
                 {(() => {
                   const Icon = iconMap[folder.icon];
                   return Icon ? (
-                    <Icon className={`w-5 h-5 ${activeFolder === folder.name ? "text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-400"}`} />
+                    <Icon className={`w-5 h-5 ${isActiveFolder(folder.name) ? "text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-400"}`} />
                   ) : null;
                 })()}
                 <span className="flex-1 text-left">{folder.name}</span>
                 {folder.count > 0 && (
-                  <span className={`text-xs ${activeFolder === folder.name ? "font-bold" : "font-medium"}`}>
+                  <span className={`text-xs ${isActiveFolder(folder.name) ? "font-bold" : "font-medium"}`}>
                     {folder.count}
                   </span>
                 )}
@@ -77,7 +79,14 @@ export default function Sidebar() {
           <ul className="space-y-1">
             {labels.map((label) => (
               <li key={label.name}>
-                <button className="w-full flex items-center gap-3 px-4 py-1.5 rounded-r-full text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
+                <button
+                  onClick={() => setFilter("label", label.name)}
+                  className={`w-full flex items-center gap-3 px-4 py-1.5 rounded-r-full text-sm transition-colors ${
+                    isActiveLabel(label.name)
+                      ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-200 font-semibold"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800"
+                  }`}
+                >
                   <span
                     className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: label.color }}

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { mockEmails, Email } from "@/data/emails";
+import { useFilter } from "@/context/FilterContext";
 import {
   Star,
   Tag,
@@ -22,14 +23,27 @@ function formatDate(date: Date): string {
   const isThisYear = date.getFullYear() === now.getFullYear();
 
   if (isToday) {
-    return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
   } else if (isThisYear) {
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   }
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
-function EmailRow({ email, isSelected, onSelect, onToggleStar, onClick }: {
+function EmailRow({
+  email,
+  isSelected,
+  onSelect,
+  onToggleStar,
+  onClick,
+}: {
   email: Email;
   isSelected: boolean;
   onSelect: (id: string) => void;
@@ -40,8 +54,12 @@ function EmailRow({ email, isSelected, onSelect, onToggleStar, onClick }: {
 
   return (
     <div
-      className={`flex items-center gap-2 px-2 py-2 border-b border-gray-100 dark:border-gray-800 cursor-pointer transition-colors ${
-        isSelected ? "bg-blue-50 dark:bg-blue-900/30" : isHovered ? "bg-gray-50 dark:bg-gray-800/50" : ""
+      className={`flex items-center gap-2 px-4 py-2 border-b border-gray-100 dark:border-gray-800 cursor-pointer transition-colors ${
+        isSelected
+          ? "bg-blue-50 dark:bg-blue-900/30"
+          : isHovered
+            ? "bg-gray-50 dark:bg-gray-800/50"
+            : ""
       } ${!email.read ? "bg-white dark:bg-gray-900" : "bg-gray-50/50 dark:bg-gray-900/50"}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -78,13 +96,17 @@ function EmailRow({ email, isSelected, onSelect, onToggleStar, onClick }: {
       </button>
 
       {/* Sender */}
-      <div className={`w-48 truncate ${!email.read ? "font-semibold text-gray-900 dark:text-white" : "text-gray-600 dark:text-gray-400"}`}>
+      <div
+        className={`w-48 truncate ${!email.read ? "font-semibold text-gray-900 dark:text-white" : "text-gray-600 dark:text-gray-400"}`}
+      >
         {email.from.name}
       </div>
 
       {/* Subject and Preview */}
       <div className="flex-1 flex items-center gap-2 min-w-0">
-        <span className={`truncate ${!email.read ? "font-semibold text-gray-900 dark:text-white" : "text-gray-900 dark:text-gray-200"}`}>
+        <span
+          className={`truncate ${!email.read ? "font-semibold text-gray-900 dark:text-white" : "text-gray-900 dark:text-gray-200"}`}
+        >
           {email.subject}
         </span>
         <span className="text-gray-500 dark:text-gray-500 truncate hidden md:inline">
@@ -98,7 +120,9 @@ function EmailRow({ email, isSelected, onSelect, onToggleStar, onClick }: {
       )}
 
       {/* Date */}
-      <div className={`text-sm flex-shrink-0 w-20 text-right ${!email.read ? "font-semibold text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>
+      <div
+        className={`text-sm flex-shrink-0 w-20 text-right ${!email.read ? "font-semibold text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}
+      >
         {formatDate(email.date)}
       </div>
     </div>
@@ -107,8 +131,33 @@ function EmailRow({ email, isSelected, onSelect, onToggleStar, onClick }: {
 
 export default function EmailList() {
   const router = useRouter();
+  const { filter } = useFilter();
   const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set());
   const [emails, setEmails] = useState(mockEmails);
+
+  const filteredEmails = useMemo(() => {
+    if (filter.type === "folder") {
+      switch (filter.value) {
+        case "Inbox":
+          return emails;
+        case "Starred":
+          return emails.filter((e) => e.starred);
+        case "Important":
+          return emails.filter((e) => e.important);
+        case "Snoozed":
+        case "Sent":
+        case "Drafts":
+        case "Spam":
+        case "Trash":
+          return [];
+        default:
+          return emails;
+      }
+    } else if (filter.type === "label") {
+      return emails.filter((e) => e.labels.includes(filter.value));
+    }
+    return emails;
+  }, [emails, filter]);
 
   const toggleSelect = (id: string) => {
     setSelectedEmails((prev) => {
@@ -123,22 +172,22 @@ export default function EmailList() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedEmails.size === emails.length) {
+    if (selectedEmails.size === filteredEmails.length) {
       setSelectedEmails(new Set());
     } else {
-      setSelectedEmails(new Set(emails.map((e) => e.id)));
+      setSelectedEmails(new Set(filteredEmails.map((e) => e.id)));
     }
   };
 
   const toggleStar = (id: string) => {
     setEmails((prev) =>
       prev.map((email) =>
-        email.id === id ? { ...email, starred: !email.starred } : email
-      )
+        email.id === id ? { ...email, starred: !email.starred } : email,
+      ),
     );
   };
 
-  const unreadCount = emails.filter((e) => !e.read).length;
+  const unreadCount = filteredEmails.filter((e) => !e.read).length;
 
   return (
     <div className="flex-1 flex flex-col bg-white dark:bg-gray-900 overflow-hidden">
@@ -148,7 +197,10 @@ export default function EmailList() {
         <div className="flex items-center">
           <input
             type="checkbox"
-            checked={selectedEmails.size === emails.length && emails.length > 0}
+            checked={
+              selectedEmails.size === filteredEmails.length &&
+              filteredEmails.length > 0
+            }
             onChange={toggleSelectAll}
             className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
           />
@@ -158,12 +210,18 @@ export default function EmailList() {
         </div>
 
         {/* Refresh button */}
-        <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full" title="Refresh">
+        <button
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+          title="Refresh"
+        >
           <RefreshCw className="w-5 h-5 text-gray-600 dark:text-gray-400" />
         </button>
 
         {/* More options */}
-        <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full" title="More">
+        <button
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+          title="More"
+        >
           <MoreVertical className="w-5 h-5 text-gray-600 dark:text-gray-400" />
         </button>
 
@@ -171,12 +229,19 @@ export default function EmailList() {
 
         {/* Pagination */}
         <span className="text-sm text-gray-500 dark:text-gray-400">
-          1-{emails.length} of {emails.length}
+          {filteredEmails.length > 0 ? `1-${filteredEmails.length}` : "0"} of{" "}
+          {filteredEmails.length}
         </span>
-        <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full disabled:opacity-50" disabled>
+        <button
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full disabled:opacity-50"
+          disabled
+        >
           <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
         </button>
-        <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full disabled:opacity-50" disabled>
+        <button
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full disabled:opacity-50"
+          disabled
+        >
           <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-400" />
         </button>
       </div>
@@ -208,16 +273,23 @@ export default function EmailList() {
 
       {/* Email list */}
       <div className="flex-1 overflow-y-auto">
-        {emails.map((email) => (
-          <EmailRow
-            key={email.id}
-            email={email}
-            isSelected={selectedEmails.has(email.id)}
-            onSelect={toggleSelect}
-            onToggleStar={toggleStar}
-            onClick={(id) => router.push(`/thread/${id}`)}
-          />
-        ))}
+        {filteredEmails.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
+            <Inbox className="w-16 h-16 mb-4 opacity-50" />
+            <p className="text-lg">No threads found</p>
+          </div>
+        ) : (
+          filteredEmails.map((email) => (
+            <EmailRow
+              key={email.id}
+              email={email}
+              isSelected={selectedEmails.has(email.id)}
+              onSelect={toggleSelect}
+              onToggleStar={toggleStar}
+              onClick={(id) => router.push(`/thread/${id}`)}
+            />
+          ))
+        )}
       </div>
     </div>
   );
