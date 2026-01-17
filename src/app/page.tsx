@@ -1,6 +1,6 @@
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
-import EmailList from "@/components/EmailList";
+import EmailList from "@/components/ThreadList";
 
 export default function Home() {
   return (
