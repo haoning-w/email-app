@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 
 export default function Header() {
@@ -26,12 +25,11 @@ export default function Header() {
           </svg>
         </button>
         <div className="flex items-center gap-2">
-          <Image
-            src="/logo-gmail.png"
-            alt="Gmail Logo"
-            width={160}
-            height={160}
-          />
+          <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none">
+            <rect x="2" y="4" width="20" height="16" rx="2" stroke="#3b82f6" strokeWidth="2" />
+            <path d="M2 6l10 7 10-7" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          <span className="text-xl text-gray-700 dark:text-gray-300 font-medium">Mail</span>
         </div>
       </div>
 
