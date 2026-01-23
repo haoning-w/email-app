@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { folders, labels } from "@/data/emails";
-import { useFilter } from "@/context/FilterContext";
+import { getFolderRoute, getLabelRoute } from "@/lib/routes";
 import {
   Inbox,
   Star,
@@ -27,9 +29,10 @@ const iconMap: Record<string, LucideIcon> = {
 };
 
 export default function Sidebar() {
-  const { filter, setFilter } = useFilter();
-  const isActiveFolder = (name: string) => filter.type === "folder" && filter.value === name;
-  const isActiveLabel = (name: string) => filter.type === "label" && filter.value === name;
+  const pathname = usePathname();
+
+  const isActiveFolder = (name: string) => pathname === getFolderRoute(name);
+  const isActiveLabel = (name: string) => pathname === getLabelRoute(name);
 
   return (
     <aside className="w-64 bg-gray-50 dark:bg-gray-900 h-full flex flex-col">
@@ -46,8 +49,8 @@ export default function Sidebar() {
         <ul className="space-y-0.5 px-2">
           {folders.map((folder) => (
             <li key={folder.name}>
-              <button
-                onClick={() => setFilter("folder", folder.name)}
+              <Link
+                href={getFolderRoute(folder.name)}
                 className={`w-full flex items-center gap-3 px-4 py-2 rounded-r-full text-sm transition-colors ${
                   isActiveFolder(folder.name)
                     ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-200 font-semibold"
@@ -66,7 +69,7 @@ export default function Sidebar() {
                     {folder.count}
                   </span>
                 )}
-              </button>
+              </Link>
             </li>
           ))}
         </ul>
@@ -79,8 +82,8 @@ export default function Sidebar() {
           <ul className="space-y-1">
             {labels.map((label) => (
               <li key={label.name}>
-                <button
-                  onClick={() => setFilter("label", label.name)}
+                <Link
+                  href={getLabelRoute(label.name)}
                   className={`w-full flex items-center gap-3 px-4 py-1.5 rounded-r-full text-sm transition-colors ${
                     isActiveLabel(label.name)
                       ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-200 font-semibold"
@@ -92,7 +95,7 @@ export default function Sidebar() {
                     style={{ backgroundColor: label.color }}
                   />
                   <span className="capitalize">{label.name}</span>
-                </button>
+                </Link>
               </li>
             ))}
           </ul>

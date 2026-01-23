@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, ReactNode } from "react";
 
 export type FilterType = "folder" | "label";
 
@@ -22,9 +22,9 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     value: "Inbox",
   });
 
-  const setFilter = (type: FilterType, value: string) => {
+  const setFilter = useCallback((type: FilterType, value: string) => {
     setFilterState({ type, value });
-  };
+  }, []);
 
   return (
     <FilterContext.Provider value={{ filter, setFilter }}>

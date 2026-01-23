@@ -30,10 +30,14 @@ function formatFullDate(date: Date): string {
 
 export default async function ThreadPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const { id } = await params;
+  const { from } = await searchParams;
+  const backUrl = from || "/inbox";
   const email = mockEmails.find((e) => e.id === id);
 
   if (!email) {
@@ -49,9 +53,9 @@ export default async function ThreadPage({
           {/* Thread toolbar */}
           <div className="flex items-center gap-2 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
             <Link
-              href="/"
+              href={backUrl}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
-              title="Back to inbox"
+              title="Back"
             >
               <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </Link>

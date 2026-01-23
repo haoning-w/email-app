@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Email } from "@/data/emails";
 import { useFilter } from "@/context/FilterContext";
 import { useEmailStore } from "@/store/emailStore";
@@ -132,6 +132,7 @@ function EmailRow({
 
 export default function EmailList() {
   const router = useRouter();
+  const pathname = usePathname();
   const { filter } = useFilter();
   const {
     emails,
@@ -273,7 +274,7 @@ export default function EmailList() {
               isSelected={selectedEmails.has(email.id)}
               onSelect={toggleSelectEmail}
               onToggleStar={toggleStar}
-              onClick={(id) => router.push(`/thread/${id}`)}
+              onClick={(id) => router.push(`/thread/${id}?from=${encodeURIComponent(pathname)}`)}
             />
           ))
         )}
