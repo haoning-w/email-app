@@ -3,12 +3,10 @@ import Link from "next/link";
 import { mockEmails } from "@/data/emails";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
+import ReplyActions from "@/components/thread/ReplyActions";
 import {
   ArrowLeft,
   Star,
-  Reply,
-  ReplyAll,
-  Forward,
   MoreVertical,
   Paperclip,
   Printer,
@@ -191,20 +189,7 @@ export default async function ThreadPage({
               </div>
 
               {/* Reply actions */}
-              <div className="flex items-center gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
-                <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300">
-                  <Reply className="w-4 h-4" />
-                  Reply
-                </button>
-                <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300">
-                  <ReplyAll className="w-4 h-4" />
-                  Reply all
-                </button>
-                <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300">
-                  <Forward className="w-4 h-4" />
-                  Forward
-                </button>
-              </div>
+              <ReplyActions email={email} />
             </div>
           </div>
         </div>

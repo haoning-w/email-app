@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { folders, labels } from "@/data/emails";
 import { getFolderRoute, getLabelRoute } from "@/lib/routes";
+import { useComposeStore } from "@/store/composeStore";
 import {
   Inbox,
   Star,
@@ -30,6 +31,7 @@ const iconMap: Record<string, LucideIcon> = {
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { openCompose } = useComposeStore();
 
   const isActiveFolder = (name: string) => pathname === getFolderRoute(name);
   const isActiveLabel = (name: string) => pathname === getLabelRoute(name);
@@ -38,7 +40,10 @@ export default function Sidebar() {
     <aside className="w-64 bg-gray-50 dark:bg-gray-900 h-full flex flex-col">
       {/* Compose Button */}
       <div className="p-4">
-        <button className="flex items-center gap-3 bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-200 px-6 py-3 rounded-2xl shadow-md hover:shadow-lg transition-all">
+        <button
+          onClick={openCompose}
+          className="flex items-center gap-3 bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-200 px-6 py-3 rounded-2xl shadow-md hover:shadow-lg transition-all"
+        >
           <Plus className="w-6 h-6" />
           <span className="font-medium">Compose</span>
         </button>

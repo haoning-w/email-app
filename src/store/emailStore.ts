@@ -16,6 +16,7 @@ interface EmailState {
   selectAllEmails: (ids: string[]) => void;
   clearSelection: () => void;
   getEmailById: (id: string) => Email | undefined;
+  addEmail: (email: Email) => void;
 }
 
 export const useEmailStore = create<EmailState>((set, get) => ({
@@ -88,4 +89,9 @@ export const useEmailStore = create<EmailState>((set, get) => ({
   getEmailById: (id) => {
     return get().emails.find((email) => email.id === id);
   },
+
+  addEmail: (email) =>
+    set((state) => ({
+      emails: [email, ...state.emails],
+    })),
 }));

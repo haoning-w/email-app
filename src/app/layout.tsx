@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { FilterProvider } from "@/context/FilterContext";
+import ComposeModalWrapper from "@/components/compose/ComposeModalWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +29,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <FilterProvider>{children}</FilterProvider>
+        <FilterProvider>
+          {children}
+          <ComposeModalWrapper />
+        </FilterProvider>
       </body>
     </html>
   );
